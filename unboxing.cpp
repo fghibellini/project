@@ -140,6 +140,27 @@ void Unboxing::doubleArithmetic(AType * lhs, AType * rhs, llvm::Instruction::Bin
     ins->replaceAllUsesWith(box(result_t));
 }
 
+bool Unboxing::genericDot() {
+    AType * lhs = state().get(ins->getOperand(0));
+    AType * rhs = state().get(ins->getOperand(1));
+
+    if (lhs->isScalar() and rhs->isScalar()) {
+        AType * result_t = updateAnalysis(
+                BinaryOperator::Create(Instruction::FMul, getScalarPayload(lhs), getScalarPayload(rhs), "", ins),
+                new AType(AType::Kind::D));
+        ins->replaceAllUsesWith(box(result_t));
+        return true;
+    } else if (lhs->isDouble() and rhs->isDouble()) {
+        AType * result_t = updateAnalysis(
+                RUNTIME_CALL(m->doubleDot, getVectorPayload(lhs), getVectorPayload(rhs)),
+                new AType(AType::Kind::D));
+        ins->replaceAllUsesWith(box(result_t));
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool Unboxing::genericAdd() {
     // first check if we are dealing with character add
     AType * lhs = state().get(ins->getOperand(0));
@@ -331,6 +352,8 @@ bool Unboxing::runOnFunction(llvm::Function & f) {
                 StringRef s = ci->getCalledFunction()->getName();
                 if (s == "genericAdd") {
                     erase = genericAdd();
+                } else if (s == "genericDot") {
+                    erase = genericDot();
                 } else if (s == "genericSub") {
                     erase = genericArithmetic(Instruction::FSub, m->doubleSub);
                 } else if (s == "genericMul") {

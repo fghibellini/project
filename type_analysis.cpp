@@ -15,6 +15,10 @@ char TypeAnalysis::ID = 0;
 AType * AType::top = createTop();
 
 
+void TypeAnalysis::genericDot(CallInst * ci) {
+    state.update(ci, new AType(AType::Kind::R, AType::Kind::DV, AType::Kind::D));
+}
+
 
 void TypeAnalysis::genericArithmetic(CallInst * ci) {
     AType * lhs = state.get(ci->getOperand(0));
@@ -31,7 +35,7 @@ void TypeAnalysis::genericRelational(CallInst * ci) {
                     AType::Kind::DV,
                     AType::Kind::D));
     } else {
-        state.update(ci, new AType(AType::Kind::R, AType::Kind::DV));
+
     }
 }
 
@@ -92,6 +96,8 @@ bool TypeAnalysis::runOnFunction(llvm::Function & f) {
                     } else if (s == "genericSetElement") {
                         // don't do anything for set element as it does not
                         // produce any new value
+                    } else if (s == "genericDot") {
+                        genericDot(ci);
                     } else if (s == "genericAdd") {
                         genericArithmetic(ci);
                     } else if (s == "genericSub") {

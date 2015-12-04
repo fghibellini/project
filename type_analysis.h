@@ -217,6 +217,7 @@ public:
     MachineState state;
 
 private:
+    void genericDot(llvm::CallInst * ci);
     void genericArithmetic(llvm::CallInst * ci);
     void genericRelational(llvm::CallInst * ci);
     void genericGetElement(llvm::CallInst * ci);

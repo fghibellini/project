@@ -526,11 +526,21 @@ RVal * c(int size, ...) {
 }
 
 double doubleDot(DoubleVector * lhs, DoubleVector * rhs) {
-    assert(false and "Fill me in");
+    double sum = 0;
+    int i = max(lhs->size, rhs->size);
+    while (i--) {
+        sum += lhs->data[i % lhs->size] * rhs->data[i % rhs->size];
+    }
+    return sum;
 }
 
 RVal * genericDot(RVal * lhs, RVal * rhs) {
-    assert(false and "Fill me in");
+    if (lhs->type == RVal::Type::Double && rhs->type == RVal::Type::Double) {
+        DoubleVector *dv = new DoubleVector(doubleDot(lhs->d, rhs->d));
+        return new RVal(dv);
+    } else {
+        throw "Invalid types for dot product";
+    }
 }
 
 
